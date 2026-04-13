@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Measurement POC</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 24px;
+      padding: 40px;
+    }
+    h1 { color: #00d4ff; margin-bottom: 30px; font-size: 36px; }
+    .section { margin-bottom: 30px; }
+    .section-title { color: #00d4ff; font-size: 28px; margin-bottom: 10px; }
+    .status { font-size: 28px; }
+    .status.running { color: #4caf50; }
+    .status.stopped { color: #f44336; }
+    .stat { margin: 5px 0; }
+    .stat-label { color: #888; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #333; }
+    th { color: #00d4ff; }
+    .focusable {
+      outline: none;
+      border: 2px solid transparent;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .focusable:focus {
+      border-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.1);
+    }
+    #refreshBtn {
+      background: #00d4ff;
+      color: #1a1a2e;
+      border: none;
+      padding: 12px 24px;
+      font-size: 22px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    #refreshBtn:focus { outline: 3px solid #fff; }
+    #error { color: #f44336; margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+  <h1>LG webOS Measurement POC</h1>
+
+  <div class="section">
+    <div class="section-title">Service Status</div>
+    <div id="serviceStatus" class="status stopped">Loading...</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Diagnostics</div>
+    <div id="diagnostics">
+      <div class="stat"><span class="stat-label">Uptime:</span> <span id="uptime">—</span></div>
+      <div class="stat"><span class="stat-label">Total Polls:</span> <span id="totalPolls">—</span></div>
+      <div class="stat"><span class="stat-label">Transitions:</span> <span id="transitions">—</span></div>
+      <div class="stat"><span class="stat-label">Memory:</span> <span id="memory">—</span></div>
+      <div class="stat"><span class="stat-label">Buffer Size:</span> <span id="bufferSize">—</span></div>
+      <div class="stat"><span class="stat-label">Pending Payloads:</span> <span id="pending">—</span></div>
+      <div class="stat"><span class="stat-label">Activity Registered:</span> <span id="activity">—</span></div>
+      <div class="stat"><span class="stat-label">DNS Override:</span> <span id="dns">—</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recent App Usage (Last 10)</div>
+    <table>
+      <thead><tr><th>App ID</th><th>Duration</th><th>Time</th></tr></thead>
+      <tbody id="usageTable"><tr><td colspan="3">No data yet</td></tr></tbody>
+    </table>
+  </div>
+
+  <button id="refreshBtn" class="focusable" tabindex="0">Refresh</button>
+  <div id="error"></div>
+
+  <script>
+    var bridge = null;
+
+    function createBridge() {
+      if (typeof WebOSServiceBridge !== 'undefined') {
+        bridge = new WebOSServiceBridge();
+        return true;
+      }
+      return false;
+    }
+
+    function fetchDiagnostics() {
+      if (!bridge && !createBridge()) {
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = 'WebOSServiceBridge not available';
+        return;
+      }
+
+      bridge.onservicecallback = function (msg) {
+        try {
+          var data = JSON.parse(msg);
+          if (data.returnValue) {
+            updateUI(data);
+          }
+        } catch (e) {
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('error').textContent = 'Parse error: ' + e.message;
+        }
+      };
+
+      bridge.call(
+        'luna://com.example.measurement.service/getDiagnostics',
+        '{}'
+      );
+    }
+
+    function updateUI(data) {
+      var statusEl = document.getElementById('serviceStatus');
+      if (data.running) {
+        statusEl.textContent = 'RUNNING';
+        statusEl.className = 'status running';
+      } else {
+        statusEl.textContent = 'STOPPED';
+        statusEl.className = 'status stopped';
+      }
+
+      document.getElementById('uptime').textContent = formatDuration(data.uptimeMs);
+      document.getElementById('totalPolls').textContent = data.totalPolls || 0;
+      document.getElementById('transitions').textContent = data.totalTransitions || 0;
+      document.getElementById('memory').textContent = (data.memoryUsageMB || 0) + ' MB';
+      document.getElementById('bufferSize').textContent = data.bufferSize || 0;
+      document.getElementById('pending').textContent = data.pendingPayloads || 0;
+      document.getElementById('activity').textContent = data.activityRegistered ? 'Yes' : 'No';
+      document.getElementById('dns').textContent = data.dnsOverrideActive ? 'Active' : 'Inactive';
+
+      document.getElementById('error').style.display = 'none';
+    }
+
+    function formatDuration(ms) {
+      if (!ms) return '—';
+      var s = Math.floor(ms / 1000);
+      var m = Math.floor(s / 60);
+      var h = Math.floor(m / 60);
+      return h + 'h ' + (m % 60) + 'm ' + (s % 60) + 's';
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', fetchDiagnostics);
+    document.getElementById('refreshBtn').addEventListener('keydown', function (e) {
+      if (e.keyCode === 13) fetchDiagnostics(); // OK button
+    });
+
+    // Auto-refresh on load and every 10 seconds
+    fetchDiagnostics();
+    setInterval(fetchDiagnostics, 10000);
+  </script>
+</body>
+</html>

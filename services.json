@@ -1,0 +1,24 @@
+{
+  "id": "com.example.measurement.service",
+  "description": "Measurement POC Background Service",
+  "services": [
+    {
+      "name": "com.example.measurement.service",
+      "description": "Background data collection service",
+      "commands": [
+        {
+          "name": "heartbeat",
+          "assistant": false
+        },
+        {
+          "name": "getDiagnostics",
+          "assistant": false
+        },
+        {
+          "name": "getConfig",
+          "assistant": false
+        }
+      ]
+    }
+  ]
+}

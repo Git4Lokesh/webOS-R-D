@@ -1,0 +1,19 @@
+{
+  "name": "lg-measurement-poc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LG webOS Measurement POC",
+  "scripts": {
+    "test": "vitest run --config test/vitest.config.js",
+    "test:watch": "vitest --config test/vitest.config.js",
+    "package": "ares-package .",
+    "install-tv": "ares-install -d myTV ./com.example.measurement_1.0.0_all.ipk",
+    "launch-tv": "ares-launch -d myTV com.example.measurement",
+    "shell-tv": "ares-shell -d myTV",
+    "pull-logs": "ares-pull -d myTV /media/developer/apps/usr/palm/services/com.example.measurement.service/data/app_usage_log.json ./pulled_log.json"
+  },
+  "devDependencies": {
+    "fast-check": "^3.15.0",
+    "vitest": "^1.6.0"
+  }
+}

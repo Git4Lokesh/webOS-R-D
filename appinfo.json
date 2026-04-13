@@ -1,0 +1,12 @@
+{
+  "id": "com.example.measurement",
+  "version": "1.0.0",
+  "vendor": "Example",
+  "type": "web",
+  "main": "index.html",
+  "title": "Measurement POC",
+  "icon": "icon.png",
+  "largeIcon": "icon.png",
+  "handlesRelaunch": true,
+  "bgImage": ""
+}

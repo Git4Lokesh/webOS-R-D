@@ -1,0 +1,8 @@
+{
+  "pollingIntervalMs": 3000,
+  "collectionServerUrl": "",
+  "dnsProxyIp": "",
+  "bufferFlushSize": 50,
+  "activityRetryDelayMs": 30000,
+  "activityMaxRetries": 5
+}

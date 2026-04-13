@@ -1,0 +1,17 @@
+{
+  "name": "com.example.measurement.service",
+  "version": "1.0.0",
+  "description": "LG webOS Measurement POC - Background JS Service",
+  "main": "main.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "webos-service": "^1.0.0"
+  },
+  "devDependencies": {
+    "fast-check": "^3.15.0",
+    "vitest": "^1.6.0"
+  }
+}

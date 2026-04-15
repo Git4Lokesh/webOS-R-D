@@ -82,6 +82,11 @@ class PollingManager {
       'luna://com.webos.applicationManager/getForegroundAppInfo',
       {},
       (response) => {
+        // Debug: log every 10th poll response to see the raw data
+        if (this._totalPolls % 10 === 0) {
+          console.log('[PollingManager] Raw response (poll #' + this._totalPolls + '):', JSON.stringify(response));
+        }
+
         if (!response || response.errorCode) {
           console.error('[PollingManager] getForegroundAppInfo error:', response);
           return;
